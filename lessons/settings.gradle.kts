@@ -10,9 +10,6 @@ plugins {
 }
 rootProject.name = "lessons"
 
-include("m1l1-first")
-include("m1l2-basic")
-
 rootDir.listFiles()?.forEach {
     if (it.isDirectory && it.list()?.contains("build.gradle.kts") == true) {
         include(it.name)
