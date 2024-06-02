@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  srender:
+    container_name: srender
+    image: cr.yandex/crpil4t07sqib79pev3t/srender:latest
+    ports:
+      - "8080:8090"
+    volumes:
+      - ./monitoring/logback.xml:/home/logback.xml
+    networks:
+      - monitoring
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: mirror.gcr.io/arm64v8/elasticsearch:7.17.20
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data/
+      - ./monitoring/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      - cluster.name=elasticsearch
+      - discovery.type=single-node
+      - http.host=0.0.0.0
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=false
+      - transport.host=0.0.0.0
+      - bootstrap.memory_lock=true
+    networks:
+      - monitoring
+
+  logstash:
+    container_name: logstash
+    image: mirror.gcr.io/arm64v8/logstash:7.17.20
+    ports:
+      - "4560:4560"
+      - "9600:9600"
+    volumes:
+      - ./monitoring/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+      - ./monitoring/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - logstash_data:/usr/share/logstash/data
+    networks:
+      - monitoring
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: mirror.gcr.io/arm64v8/kibana:7.17.20
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    volumes:
+      - ./monitoring/kibana.yml:/usr/share/kibana/config/kibana.yml
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - monitoring
+    depends_on:
+      - elasticsearch
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  elasticsearch_data:
+  logstash_data:
+  kibana_data:
