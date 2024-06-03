@@ -1,4 +1,6 @@
-rootProject.name = "my-project"
+@file:Suppress("UnstableApiUsage")
+
+rootProject.name = "srender"
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -13,6 +15,7 @@ pluginManagement {
     plugins {
         id("build-jvm") apply false
         id("build-kmp") apply false
+        id("com.bmuschko.docker-remote-api") version "9.4.0"
     }
     repositories {
         mavenCentral()
