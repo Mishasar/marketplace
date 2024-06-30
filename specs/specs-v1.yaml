@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: "SRender"
+  description: Приложение для отслеживания качества работы дежурных.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/v1
+paths:
+  /trainings/create:
+    post:
+      tags:
+        - training
+      summary: Создать учения
+      operationId: trainingCreate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingCreateRequest'
+        required: true
+      responses:
+        200:
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingCreateResponse'
+  /trainings/read:
+    post:
+      tags:
+        - training
+      summary: Результат конкретных учений
+      operationId: trainingRead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingReadRequest'
+        required: true
+      responses:
+        200:
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingReadResponse'
+  /trainings/update:
+    post:
+      tags:
+        - training
+      summary: Обновить учение
+      operationId: trainingUpdate
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingUpdateRequest'
+        required: true
+      responses:
+        200:
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingUpdateResponse'
+  /trainings/delete:
+    post:
+      tags:
+        - training
+      summary: Удалить учение
+      operationId: trainingDelete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingDeleteRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDeleteResponse'
+  /trainings/search:
+    post:
+      tags:
+        - training
+      summary: Поиск учений
+      operationId: trainingSearch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainingSearchRequest'
+        required: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSearchResponse'
+
+components:
+  schemas:
+
+    IRequest:
+      type: object
+      description: Базовый интерфейс для всех запросов
+      properties:
+        requestType:
+          type: string
+          description: Дискриминатор по типу запроса
+          example: create
+      discriminator:
+        propertyName: requestType
+        mapping:
+          create: '#/components/schemas/TrainingCreateRequest'
+          read: '#/components/schemas/TrainingReadRequest'
+          update: '#/components/schemas/TrainingUpdateRequest'
+          delete: '#/components/schemas/TrainingDeleteRequest'
+          search: '#/components/schemas/TrainingSearchRequest'
+
+    IResponse:
+      type: object
+      description: Базовый интерфейс для всех ответов
+      properties:
+        responseType:
+          type: string
+          description: Дискриминатор по типу ответа
+          example: create
+        result:
+          $ref: '#/components/schemas/ResponseResult'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error'
+      discriminator:
+        propertyName: responseType
+        mapping:
+          create: '#/components/schemas/TrainingCreateResponse'
+          read: '#/components/schemas/TrainingReadResponse'
+          update: '#/components/schemas/TrainingUpdateResponse'
+          delete: '#/components/schemas/TrainingDeleteResponse'
+          search: '#/components/schemas/TrainingSearchResponse'
+
+    ResponseResult:
+      type: string
+      enum:
+        - success
+        - error
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        group:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+
+    UserId:
+      type: integer
+      description: ID пользователя
+
+    TrainingId:
+      type: integer
+      description: Id учений
+
+    TrainingTypeId:
+      type: integer
+      description: ID типа учений
+
+    TrainingLock:
+      type: string
+      description: Optimistic lock version
+
+    BaseTraining:
+      type: object
+      description: Объект учений, содержащий основные параметры учений
+      required: [ groupSlug, name, type, date ]
+      properties:
+        groupSlug:
+          type: string
+          description: Slug команды, в которой проводились учения
+        name:
+          type: string
+          description: Названия учений (например, "Спринтовые учения по отключению ДЦ Sprint 1")
+        type:
+          $ref: '#/components/schemas/TrainingTypeId'
+        date:
+          type: string
+          description: Дата проведения учений
+
+    TrainingCreateObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseTraining'
+
+    TrainingCreateRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/TrainingRequestDebug'
+        - type: object
+          properties:
+            training:
+              $ref: '#/components/schemas/TrainingCreateObject'
+
+    TrainingReadObject:
+      allOf:
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/TrainingId'
+            userId:
+              $ref: '#/components/schemas/UserId'
+
+    TrainingReadRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/TrainingRequestDebug'
+        - type: object
+          properties:
+            training:
+              $ref: '#/components/schemas/TrainingReadObject'
+
+    TrainingUpdateObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseTraining'
+        - type: object
+          properties:
+            id:
+              $ref: '#/components/schemas/TrainingId'
+            lock:
+              $ref: '#/components/schemas/TrainingLock'
+
+    TrainingUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/TrainingRequestDebug'
+        - type: object
+          properties:
+            training:
+              $ref: '#/components/schemas/TrainingUpdateObject'
+
+    TrainingDeleteObject:
+      allOf:
+        - type: object
+          required: [ id ]
+          properties:
+            id:
+              $ref: '#/components/schemas/TrainingId'
+            lock:
+              $ref: '#/components/schemas/TrainingLock'
+
+    TrainingDeleteRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/TrainingRequestDebug'
+        - type: object
+          properties:
+            training:
+              $ref: '#/components/schemas/TrainingDeleteObject'
+
+    TrainingSearchRequest:
+      allOf:
+        - $ref: '#/components/schemas/IRequest'
+        - $ref: '#/components/schemas/TrainingRequestDebug'
+        - type: object
+          properties:
+            trainingFilter:
+              $ref: '#/components/schemas/TrainingSearchFilter'
+
+    TrainingSearchFilter:
+      type: object
+      description: A set of search filters
+      properties:
+        searchString:
+          type: string
+          description: Фильтр по названию
+        userId:
+          $ref: '#/components/schemas/UserId'
+
+    TrainingResponseObject:
+      allOf:
+        - $ref: '#/components/schemas/BaseTraining'
+        - type: object
+          description: The object that is returned in the backend response
+          properties:
+            id:
+              $ref: '#/components/schemas/TrainingId'
+            userId:
+              $ref: '#/components/schemas/UserId'
+            lock:
+              $ref: '#/components/schemas/TrainingLock'
+            permissions:
+              type: array
+              uniqueItems: true
+              items:
+                $ref: '#/components/schemas/TrainingPermissions'
+
+    TrainingPermissions:
+      type: string
+      description: Доступ пользователя к учению
+      enum:
+        - read
+        - update
+        - delete
+
+    TrainingResponseSingle:
+      allOf:
+        - type: object
+          properties:
+            training:
+              $ref: '#/components/schemas/TrainingResponseObject'
+
+    TrainingResponseMulti:
+      allOf:
+        - type: object
+          properties:
+            trainings:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrainingResponseObject'
+
+    TrainingCreateResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/TrainingResponseSingle'
+
+    TrainingReadResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/TrainingResponseSingle'
+
+    TrainingUpdateResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/TrainingResponseSingle'
+
+    TrainingDeleteResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/TrainingResponseSingle'
+
+    TrainingSearchResponse:
+      allOf:
+        - $ref: '#/components/schemas/IResponse'
+        - $ref: '#/components/schemas/TrainingResponseMulti'
+
+    # STUBS ======================
+    TrainingRequestDebug:
+      type: object
+      properties:
+        debug:
+          $ref: '#/components/schemas/TrainingDebug'
+
+    TrainingDebug:
+      type: object
+      properties:
+        mode:
+          $ref: '#/components/schemas/TrainingRequestDebugMode'
+        stub:
+          $ref: '#/components/schemas/TrainingRequestDebugStubs'
+
+    TrainingRequestDebugMode:
+      type: string
+      enum:
+        - prod
+        - test
+        - stub
+
+    TrainingRequestDebugStubs:
+      type: string
+      description: List of all stubs
+      enum:
+        - success
+        - notFound
+        - badId
+        - badText
+        - badChoices
+        - badAnswer
+        - badExplanation
+        - cannotDelete
+        - badSearchString
