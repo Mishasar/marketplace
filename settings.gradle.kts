@@ -18,5 +18,4 @@ plugins {
 
 rootProject.name = "ok-srender-202312"
 
-includeBuild("lessons")
 includeBuild("srender")

@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
+rootProject.name = "srender"
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
@@ -13,9 +15,6 @@ pluginManagement {
     plugins {
         id("build-jvm") apply false
         id("build-kmp") apply false
-        val kotlinVersion: String by settings
-        kotlin("jvm") version kotlinVersion
-        id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
     }
     repositories {
         mavenCentral()
@@ -27,4 +26,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.5.0"
 }
 
-rootProject.name = "srender"
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+include(":common")
+include(":api-v1-jackson")
+include("api-v1-mappers")
